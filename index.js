@@ -1,11 +1,13 @@
 'use strict'
 
-import { NativeModules, NativeAppEventEmitter, Platform } from 'react-native'
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native'
 
 var SoundLevelModule =
   Platform.OS === 'desktop'
     ? NativeModules.RNSoundLevel
     : NativeModules.RNSoundLevelModule
+
+var soundLevelEmitter = Platform.OS !== 'desktop' ? new NativeEventEmitter(SoundLevelModule) : null
 
 var SoundLevel = {
   timer: null,
@@ -32,7 +34,7 @@ var SoundLevel = {
         }
       }, monitorConfig.monitorInterval)
     } else {
-      this.frameSubscription = NativeAppEventEmitter.addListener(
+      this.frameSubscription = soundLevelEmitter.addListener(
         'frame',
         data => {
           if (this.onNewFrame) {
