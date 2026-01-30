@@ -1,6 +1,7 @@
 package com.punarinta.RNSoundLevel;
 
 import android.content.Context;
+import android.os.Build;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -44,7 +45,11 @@ class RNSoundLevelModule extends ReactContextBaseJavaModule {
       return;
     }
 
-    recorder = new MediaRecorder();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      recorder = new MediaRecorder(this.getReactApplicationContext());
+    } else {
+      recorder = new MediaRecorder();
+    }
     try {
       recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
       recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);

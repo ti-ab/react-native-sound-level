@@ -10,7 +10,6 @@
 #import <React/RCTConvert.h>
 #import <React/RCTBridge.h>
 #import <React/RCTUtils.h>
-#import <React/RCTEventDispatcher.h>
 #import <AVFoundation/AVFoundation.h>
 
 @implementation RNSoundLevelModule {
@@ -21,11 +20,22 @@
   int _progressUpdateInterval;
   NSDate *_prevProgressUpdateTime;
   AVAudioSession *_recordSession;
+  bool _hasListeners;
 }
 
-@synthesize bridge = _bridge;
-
 RCT_EXPORT_MODULE();
+
+- (NSArray<NSString *> *)supportedEvents {
+  return @[@"frame"];
+}
+
+- (void)startObserving {
+  _hasListeners = YES;
+}
+
+- (void)stopObserving {
+  _hasListeners = NO;
+}
 
 - (void)sendProgressUpdate {
   if (!_audioRecorder || !_audioRecorder.isRecording) {
@@ -43,7 +53,9 @@ RCT_EXPORT_MODULE();
       [body setObject:[NSNumber numberWithFloat:_currentLevel] forKey:@"value"];
       [body setObject:[NSNumber numberWithFloat:_currentLevel] forKey:@"rawValue"];
 
-      [self.bridge.eventDispatcher sendAppEventWithName:@"frame" body:body];
+      if (_hasListeners) {
+        [self sendEventWithName:@"frame" body:body];
+      }
 
     _prevProgressUpdateTime = [NSDate date];
   }
